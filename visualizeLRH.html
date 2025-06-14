@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histogram Largest Rectangle Visualizer</title>
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #3b82f6;
+      --accent-color: #f59e0b;
+      --success-color: #10b981;
+      --danger-color: #ef4444;
+      --background-color: #f8fafc;
+      --text-color: #1e293b;
+      --border-radius: 8px;
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    h2 {
+      color: var(--text-color);
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      background: #f1f5f9;
+      border-radius: var(--border-radius);
+    }
+
+    input, select, button {
+      padding: 0.75rem 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    input {
+      min-width: 300px;
+      background: white;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    select {
+      background: white;
+      cursor: pointer;
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      padding: 0.75rem 1.5rem;
+    }
+
+    button:hover {
+      background-color: var(--secondary-color);
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .output-container {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: #f1f5f9;
+      border-radius: var(--border-radius);
+    }
+
+    #output, #areaDetail, #stackView {
+      margin: 0.5rem 0;
+      font-weight: 500;
+    }
+
+    #output {
+      color: var(--success-color);
+      font-size: 1.25rem;
+    }
+
+    .histogram-container {
+      position: relative;
+      margin-top: 2rem;
+      padding: 3rem;
+      background: white;
+      border-radius: var(--border-radius);
+      min-height: 800px;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    .histogram {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 12px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .grid-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+        linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+      background-size: 92px 50px;
+      z-index: 1;
+    }
+
+    .bar {
+      width: 80px;
+      background-color: var(--primary-color);
+      text-align: center;
+      color: white;
+      border-radius: var(--border-radius) var(--border-radius) 0 0;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: 600;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 1rem;
+      font-size: 1.25rem;
+      position: relative;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .bar::after {
+      content: attr(data-height);
+      position: absolute;
+      bottom: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.875rem;
+      color: var(--text-color);
+    }
+
+    .bar.active {
+      background-color: var(--accent-color);
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .bar.popped {
+      background-color: var(--danger-color);
+      animation: pop 0.5s ease-out;
+    }
+
+    .bar.max-rect {
+      background-color: var(--success-color);
+      animation: highlight 1s ease-in-out infinite;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes highlight {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f1f5f9;
+      border-radius: var(--border-radius);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+    }
+
+    .step-counter {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: var(--primary-color);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      font-weight: 600;
+    }
+
+    .explanation-panel {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: #f1f5f9;
+      border-radius: var(--border-radius);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+
+      input {
+        min-width: 100%;
+      }
+
+      .bar {
+        width: 50px;
+        font-size: 1rem;
+      }
+
+      .histogram-container {
+        min-height: 600px;
+        padding: 2rem;
+      }
+
+      .grid-background {
+        background-size: 62px 50px;
+      }
+
+      .legend {
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 1rem;
+      }
+
+      .bar {
+        width: 40px;
+        font-size: 0.875rem;
+      }
+
+      .histogram-container {
+        min-height: 500px;
+        padding: 1.5rem;
+      }
+
+      .grid-background {
+        background-size: 52px 50px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📊 Histogram Largest Rectangle Visualizer</h2>
+
+    <div class="controls">
+      <input type="text" id="heightsInput" placeholder="Enter bar heights (e.g., 6,2,5,4,5,1,6)">
+      <select id="speed">
+        <option value="300">Fast</option>
+        <option value="600" selected>Medium</option>
+        <option value="1000">Slow</option>
+      </select>
+      <button onclick="findLargestRectangleAnimated()" id="visualizeBtn">Visualize Step-by-Step</button>
+      <button onclick="resetVisualization()" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="output-container">
+      <div id="output"></div>
+      <div id="areaDetail"></div>
+      <div id="stackView"></div>
+    </div>
+
+    <div class="histogram-container">
+      <div class="grid-background"></div>
+      <div class="step-counter" id="stepCounter">Step: 0</div>
+      <div class="histogram" id="histogramVisual"></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: var(--primary-color)"></div>
+        <span>Normal</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: var(--accent-color)"></div>
+        <span>Active</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: var(--danger-color)"></div>
+        <span>Popped</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: var(--success-color)"></div>
+        <span>Max Rectangle</span>
+      </div>
+    </div>
+
+    <div class="explanation-panel">
+      <h3>How it works:</h3>
+      <p>1. The algorithm uses a stack to keep track of potential rectangles</p>
+      <p>2. For each bar, we check if it can extend any previous rectangles</p>
+      <p>3. When we find a smaller bar, we calculate areas for all larger bars in the stack</p>
+      <p>4. The maximum area found during this process is our answer</p>
+    </div>
+  </div>
+
+  <script>
+    let isAnimating = false;
+    let currentStep = 0;
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function resetVisualization() {
+      const visual = document.getElementById("histogramVisual");
+      const output = document.getElementById("output");
+      const areaDetail = document.getElementById("areaDetail");
+      const stackView = document.getElementById("stackView");
+      const stepCounter = document.getElementById("stepCounter");
+      const visualizeBtn = document.getElementById("visualizeBtn");
+
+      visual.innerHTML = '';
+      output.textContent = '';
+      areaDetail.textContent = '';
+      stackView.textContent = '';
+      stepCounter.textContent = 'Step: 0';
+      currentStep = 0;
+      isAnimating = false;
+      visualizeBtn.disabled = false;
+    }
+
+    async function findLargestRectangleAnimated() {
+      if (isAnimating) return;
+      
+      const visualizeBtn = document.getElementById("visualizeBtn");
+      visualizeBtn.disabled = true;
+      isAnimating = true;
+      currentStep = 0;
+
+      const input = document.getElementById("heightsInput").value;
+      const heights = input.split(',').map(Number).filter(h => !isNaN(h));
+      const speed = parseInt(document.getElementById("speed").value);
+
+      const visual = document.getElementById("histogramVisual");
+      const output = document.getElementById("output");
+      const areaDetail = document.getElementById("areaDetail");
+      const stackView = document.getElementById("stackView");
+      const stepCounter = document.getElementById("stepCounter");
+
+      output.textContent = '';
+      areaDetail.textContent = '';
+      stackView.textContent = '';
+
+      visual.innerHTML = '';
+      const bars = [];
+
+      if (heights.length === 0) {
+        output.textContent = "Please enter valid heights.";
+        visualizeBtn.disabled = false;
+        isAnimating = false;
+        return;
+      }
+
+      // Create visual bars
+      for (let h of heights) {
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        bar.style.height = h * 50 + "px";
+        bar.textContent = h;
+        bar.setAttribute('data-height', h);
+        visual.appendChild(bar);
+        bars.push(bar);
+      }
+
+      let stack = [], maxArea = 0;
+
+      for (let i = 0; i <= heights.length; ++i) {
+        currentStep++;
+        stepCounter.textContent = `Step: ${currentStep}`;
+        
+        let h = (i === heights.length) ? 0 : heights[i];
+
+        if (i < heights.length) {
+          bars[i].classList.add("active");
+          await sleep(speed);
+        }
+
+        while (stack.length && h < heights[stack[stack.length - 1]]) {
+          let top = stack.pop();
+          bars[top].classList.remove("active");
+          bars[top].classList.add("popped");
+
+          let width = stack.length === 0 ? i : i - stack[stack.length - 1] - 1;
+          let area = heights[top] * width;
+
+          areaDetail.textContent = `Checking Area: height = ${heights[top]}, width = ${width}, area = ${area}`;
+
+          if (area > maxArea) {
+            maxArea = area;
+            bars.forEach(bar => bar.classList.remove("max-rect"));
+            for (let j = stack.length === 0 ? 0 : stack[stack.length - 1] + 1; j < i; j++) {
+              bars[j].classList.add("max-rect");
+            }
+          }
+
+          await sleep(speed);
+          bars[top].classList.remove("popped");
+        }
+
+        if (i < heights.length) {
+          stack.push(i);
+          bars[i].classList.remove("active");
+        }
+
+        stackView.textContent = `Stack: [${stack.join(", ")}]`;
+        await sleep(200);
+      }
+
+      output.textContent = `✅ Largest Rectangle Area: ${maxArea}`;
+      areaDetail.textContent = '';
+      visualizeBtn.disabled = false;
+      isAnimating = false;
+    }
+  </script>
+</body>
+</html>
