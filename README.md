@@ -21,8 +21,8 @@ An interactive visualizer that demonstrates how the Largest Rectangle in a Histo
 
 ## How It Works
 
-1️⃣ You enter bar heights as comma-separated values.  
-2️⃣ The algorithm visualizes each step, showing the stack, current area, and max area found.
+1️ You enter bar heights as comma-separated values.  
+2️ The algorithm visualizes each step, showing the stack, current area, and max area found.
 
 ## Screenshots
 
