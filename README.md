@@ -1,20 +1,33 @@
-# Rectangular-Area-in-Histogram
-This project finds the largest rectangular area possible in a given histogram using a stack-based approach with O(n) time complexity.
+📊 Largest Rectangle in Histogram Visualizer
 
-## Problem Statement
-Given an array representing the heights of bars in a histogram, find the area of the largest rectangle that can be formed by contiguous bars.
+An interactive visualizer that demonstrates how the Largest Rectangle in a Histogram problem is solved using stack-based algorithm.
 
-## Features
-- Efficient stack-based algorithm.
-- Handles large datasets.
-- Time complexity: O(n)
+## 🔗 Live Demo
 
-## Technologies Used
-- C++
-- Stack Data Structure
-- Algorithm Optimization
+👉 [View Demo Here](https://laxmi-verma-21.github.io/largest-rectangle-visualizer/)
 
-## Applications
-- Image processing
-- Histogram analysis
-- Computational geometry
+## 💡 Features
+
+- Step-by-step visualization
+- Stack-based algorithm (O(n) time complexity)
+- Adjustable speed controls
+- Clean, responsive UI
+
+## 📂 Technologies Used
+
+- HTML
+- CSS
+- JavaScript
+
+## 🚀 How It Works
+
+1️⃣ You enter bar heights as comma-separated values.  
+2️⃣ The algorithm visualizes each step, showing the stack, current area, and max area found.
+
+## 📷 Screenshots
+
+_Add screenshots if you want here._
+
+## 🧑‍💻 Author
+
+- Laxmi Verma
